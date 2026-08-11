@@ -1,0 +1,6 @@
+Model,model__C,model__solver,model__criterion,model__max_depth,model__min_samples_split,model__n_estimators,model__n_neighbors,model__weights,model__learning_rate,model__subsample
+Logistic Regression,0.01,liblinear,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Decision Tree,N/A,N/A,entropy,5.0,5.0,N/A,N/A,N/A,N/A,N/A
+Random Forest,N/A,N/A,N/A,10.0,5.0,200.0,N/A,N/A,N/A,N/A
+KNN,N/A,N/A,N/A,N/A,N/A,N/A,3.0,uniform,N/A,N/A
+XGBoost,N/A,N/A,N/A,3.0,N/A,100.0,N/A,N/A,0.05,0.8
