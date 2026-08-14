@@ -311,7 +311,7 @@ st.markdown("""
         <span>🩺</span> SmartCare AI — Appointment No-Show Prediction System
     </div>
     <div class="header-subtitle">
-        Option A: Binary Classification Task | Target Variable: <code>no_show</code> (Attended vs No Show)
+         Binary Classification  | Target Variable: Attended vs No Show
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -523,7 +523,7 @@ with tab1:
         prob_no_show = 0.45 # Fallback
 
     st.markdown("---")
-    st.markdown("### 🎯 Binary Classification Output (Target Variable: `no_show`)")
+    st.markdown("###  Binary Classification Output (Target Variable: `no_show`)")
 
     res_col1, res_col2 = st.columns([1, 1.2])
 
@@ -564,18 +564,18 @@ with tab1:
             risk_title = "PREDICTED OUTCOME: NO SHOW"
             badge_bg = "#F43F5E"
             rec_items = [
-                "📲 Send Automated WhatsApp & SMS Appointment Reminders (24h & 2h prior).",
-                "🚗 Offer Patient Transportation Assistance / Mobility Voucher.",
-                "💻 Propose Telehealth / Virtual Consultation Transition.",
-                "📞 Schedule Direct Case Manager Follow-up Call."
+                " Send Automated WhatsApp & SMS Appointment Reminders (24h & 2h prior).",
+                " Offer Patient Transportation Assistance / Mobility Voucher.",
+                " Propose Telehealth / Virtual Consultation Transition.",
+                " Schedule Direct Case Manager Follow-up Call."
             ]
         else:
             risk_class = "risk-low"
             risk_title = "PREDICTED OUTCOME: ATTENDED"
             badge_bg = "#10B981"
             rec_items = [
-                "✅ Standard appointment workflow proceeding normally.",
-                "📩 Send standard calendar invitation and directions."
+                " Standard appointment workflow proceeding normally.",
+                " Send standard calendar invitation and directions."
             ]
 
         st.markdown(f"""
@@ -603,7 +603,7 @@ with tab1:
 # ------------------------------------------------------------------------------
 with tab2:
     st.markdown("### 📈 Model Interpretability & Feature Impact Breakdown")
-    st.markdown("Understand the top clinical and administrative drivers influencing patient outcomes using Explainable AI (SHAP).")
+    st.markdown("Understand the top clinical and administrative drivers influencing patient outcomes using Explainable AI .")
 
     exp_col1, exp_col2 = st.columns([1.1, 1])
 
@@ -693,7 +693,7 @@ with tab3:
         <div class="metric-card">
             <div class="metric-label">Total Patients</div>
             <div class="metric-value">{total_pts:,}</div>
-            <div class="metric-subtext">📁 Active Records</div>
+            <div class="metric-subtext"> Active Records</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -701,7 +701,7 @@ with tab3:
         <div class="metric-card">
             <div class="metric-label">No-Show Rate</div>
             <div class="metric-value">{no_show_pct:.1f}%</div>
-            <div class="metric-subtext" style="color: #F43F5E;">⚠️ High Priority</div>
+            <div class="metric-subtext" style="color: #F43F5E;"> High Priority</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -709,7 +709,7 @@ with tab3:
         <div class="metric-card">
             <div class="metric-label">Admission Rate</div>
             <div class="metric-value">{admitted_pct:.1f}%</div>
-            <div class="metric-subtext" style="color: #F59E0B;">🏥 Inpatient Cohort</div>
+            <div class="metric-subtext" style="color: #F59E0B;"> Inpatient Cohort</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -717,7 +717,7 @@ with tab3:
         <div class="metric-card">
             <div class="metric-label">Avg Wait Time</div>
             <div class="metric-value">{avg_wait:.1f} Days</div>
-            <div class="metric-subtext">⏱️ Scheduling Delay</div>
+            <div class="metric-subtext"> Scheduling Delay</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -725,7 +725,7 @@ with tab3:
         <div class="metric-card">
             <div class="metric-label">Avg Total Bill</div>
             <div class="metric-value">LKR {avg_bill/1000:.1f}k</div>
-            <div class="metric-subtext" style="color: #10B981;">💳 Revenue / Case</div>
+            <div class="metric-subtext" style="color: #10B981;"> Revenue / Case</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -984,6 +984,6 @@ with tab5:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #64748B; font-size: 0.85rem; padding: 12px 0;">
-    SmartCare AI Clinical Suite v1.0.0 | Powered by Streamlit, Scikit-Learn, XGBoost & Plotly | Developed with Antigravity AI
+    SmartCare AI Clinical Suite v1.0.0 | Powered by Streamlit, Scikit-Learn, XGBoost & Plotly | Group 11
 </div>
 """, unsafe_allow_html=True)
