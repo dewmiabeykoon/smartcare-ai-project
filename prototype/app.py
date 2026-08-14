@@ -345,6 +345,15 @@ preset = st.sidebar.radio(
     index=0
 )
 
+# Reset prediction state if preset or selected model changes
+if 'last_preset' not in st.session_state or st.session_state['last_preset'] != preset:
+    st.session_state['last_preset'] = preset
+    st.session_state['has_predicted'] = False
+
+if 'last_model' not in st.session_state or st.session_state['last_model'] != selected_model_name:
+    st.session_state['last_model'] = selected_model_name
+    st.session_state['has_predicted'] = False
+
 # Preset initial values generator
 def get_preset_values(preset_name):
     if preset_name == "Sample No-Show Patient":
@@ -453,150 +462,164 @@ with tab1:
         payment_status = st.selectbox("Payment Status", ["Paid", "Partially Paid", "Unpaid"], index=0)
         payment_method = st.selectbox("Payment Method", ["Cash", "Card", "Online", "Insurance"], index=0)
 
-    submit_btn = st.button("⚡ Run Real-Time AI Prediction")
+    st.markdown("<br>", unsafe_allow_html=True)
+    submit_btn = st.button("⚡ Run Real-Time AI Prediction", type="primary", use_container_width=True)
 
-    # Feature Processing for Prediction
+    if submit_btn:
+        st.session_state['has_predicted'] = True
+        st.toast(f"⚡ Real-Time AI Prediction triggered using {selected_model_name}!", icon="🎯")
+
+    # Shared variables for Tab 2 calculations
     admitted_val = 1 if admitted_str == "Yes" else 0
     total_bill = consult_fee + room_charge + lab_charge + med_charge
-    
-    # Calculate Engineered Features
-    if age <= 18:
-        age_group_str = "Child"
-    elif age <= 35:
-        age_group_str = "Young Adult"
-    elif age <= 50:
-        age_group_str = "Adult"
-    elif age <= 65:
-        age_group_str = "Middle Age"
-    else:
-        age_group_str = "Senior"
-        
     high_bp_val = 1 if (sys_bp >= 140 or dia_bp >= 90) else 0
-    missed_rate_val = missed_prev / (prev_appts + 1)
 
-    # Encode Categoricals safely
-    def safe_encode(col_name, val):
-        if col_name in encoders_dict:
-            le = encoders_dict[col_name]
-            if val in le.classes_:
-                return le.transform([val])[0]
+    if st.session_state.get('has_predicted', False):
+        # Feature Processing for Prediction
+        with st.spinner("Processing real-time AI prediction..."):
+            # Calculate Engineered Features
+            if age <= 18:
+                age_group_str = "Child"
+            elif age <= 35:
+                age_group_str = "Young Adult"
+            elif age <= 50:
+                age_group_str = "Adult"
+            elif age <= 65:
+                age_group_str = "Middle Age"
             else:
+                age_group_str = "Senior"
+                
+            missed_rate_val = missed_prev / (prev_appts + 1)
+
+            # Encode Categoricals safely
+            def safe_encode(col_name, val):
+                if col_name in encoders_dict:
+                    le = encoders_dict[col_name]
+                    if val in le.classes_:
+                        return le.transform([val])[0]
+                    else:
+                        return 0
                 return 0
-        return 0
 
-    gen_enc = safe_encode("gender", gender)
-    bg_enc = safe_encode("blood_group", blood_group)
-    dept_enc = safe_encode("department", department)
-    diag_enc = safe_encode("diagnosis", diagnosis)
-    room_enc = safe_encode("room_type", room_type)
-    pay_stat_enc = safe_encode("payment_status", payment_status)
-    pay_meth_enc = safe_encode("payment_method", payment_method)
-    age_grp_enc = safe_encode("Age_Group", age_group_str)
+            gen_enc = safe_encode("gender", gender)
+            bg_enc = safe_encode("blood_group", blood_group)
+            dept_enc = safe_encode("department", department)
+            diag_enc = safe_encode("diagnosis", diagnosis)
+            room_enc = safe_encode("room_type", room_type)
+            pay_stat_enc = safe_encode("payment_status", payment_status)
+            pay_meth_enc = safe_encode("payment_method", payment_method)
+            age_grp_enc = safe_encode("Age_Group", age_group_str)
 
-    input_df = pd.DataFrame([{
-        'age': age, 'gender': gen_enc, 'blood_group': bg_enc, 'department': dept_enc,
-        'diagnosis': diag_enc, 'waiting_days': waiting_days, 'previous_appointments': prev_appts,
-        'missed_previous_appointments': missed_prev, 'admitted': admitted_val,
-        'room_type': room_enc, 'length_of_stay_days': stay_days, 'previous_admissions': prev_admissions,
-        'systolic_bp': sys_bp, 'diastolic_bp': dia_bp, 'blood_sugar_mg_dl': blood_sugar,
-        'cholesterol_mg_dl': cholesterol, 'bmi': bmi, 'lab_tests_count': 2, 'treatments_count': 1,
-        'consultation_fee_lkr': consult_fee, 'room_charge_lkr': room_charge,
-        'lab_charge_lkr': lab_charge, 'medicine_charge_lkr': med_charge, 'total_bill_lkr': total_bill,
-        'payment_status': pay_stat_enc, 'payment_method': pay_meth_enc,
-        'Age_Group': age_grp_enc, 'High_BP': high_bp_val, 'Missed_Rate': missed_rate_val
-    }])
+            input_df = pd.DataFrame([{
+                'age': age, 'gender': gen_enc, 'blood_group': bg_enc, 'department': dept_enc,
+                'diagnosis': diag_enc, 'waiting_days': waiting_days, 'previous_appointments': prev_appts,
+                'missed_previous_appointments': missed_prev, 'admitted': admitted_val,
+                'room_type': room_enc, 'length_of_stay_days': stay_days, 'previous_admissions': prev_admissions,
+                'systolic_bp': sys_bp, 'diastolic_bp': dia_bp, 'blood_sugar_mg_dl': blood_sugar,
+                'cholesterol_mg_dl': cholesterol, 'bmi': bmi, 'lab_tests_count': 2, 'treatments_count': 1,
+                'consultation_fee_lkr': consult_fee, 'room_charge_lkr': room_charge,
+                'lab_charge_lkr': lab_charge, 'medicine_charge_lkr': med_charge, 'total_bill_lkr': total_bill,
+                'payment_status': pay_stat_enc, 'payment_method': pay_meth_enc,
+                'Age_Group': age_grp_enc, 'High_BP': high_bp_val, 'Missed_Rate': missed_rate_val
+            }])
 
-    # Scale inputs using fitted StandardScaler safely
-    input_scaled = input_df.copy()
-    valid_scale_cols = [c for c in scale_cols if c in input_scaled.columns]
-    if valid_scale_cols:
-        input_scaled[valid_scale_cols] = scaler_obj.transform(input_scaled[valid_scale_cols])
-    input_scaled = input_scaled[feature_list]
+            # Scale inputs using fitted StandardScaler safely
+            input_scaled = input_df.copy()
+            valid_scale_cols = [c for c in scale_cols if c in input_scaled.columns]
+            if valid_scale_cols:
+                input_scaled[valid_scale_cols] = scaler_obj.transform(input_scaled[valid_scale_cols])
+            input_scaled = input_scaled[feature_list]
 
-    # Predict Risk Probability
-    model_obj = models_dict.get(selected_model_name)
-    if model_obj is not None and hasattr(model_obj, "predict_proba"):
-        prob_no_show = model_obj.predict_proba(input_scaled)[0][1]
-    elif model_obj is not None:
-        prob_no_show = float(model_obj.predict(input_scaled)[0])
-    else:
-        prob_no_show = 0.45 # Fallback
+            # Predict Risk Probability
+            model_obj = models_dict.get(selected_model_name)
+            if model_obj is not None and hasattr(model_obj, "predict_proba"):
+                prob_no_show = model_obj.predict_proba(input_scaled)[0][1]
+            elif model_obj is not None:
+                prob_no_show = float(model_obj.predict(input_scaled)[0])
+            else:
+                prob_no_show = 0.45 # Fallback
 
-    st.markdown("---")
-    st.markdown("###  Binary Classification Output (Target Variable: `no_show`)")
+        st.markdown("---")
+        if submit_btn:
+            st.success(f" **Real-Time Prediction Executed Successfully!** Active Model: `{selected_model_name}` | Calculated Risk Score: `{prob_no_show*100:.1f}%`")
 
-    res_col1, res_col2 = st.columns([1, 1.2])
+        st.markdown("### Binary Classification Output (Target Variable: `no_show`)")
 
-    with res_col1:
-        # Gauge plot for probability score
-        fig_gauge = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = prob_no_show * 100,
-            domain = {'x': [0, 1], 'y': [0, 1]},
-            title = {'text': "Predicted Probability of No-Show (no_show = 1) (%)", 'font': {'size': 14, 'color': '#94A3B8'}},
-            number = {'suffix': "%", 'font': {'size': 36, 'color': '#F8FAFC', 'family': 'Inter'}},
-            gauge = {
-                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
-                'bar': {'color': "#F43F5E" if prob_no_show >= 0.5 else "#10B981"},
-                'bgcolor': "rgba(30, 41, 59, 0.5)",
-                'borderwidth': 1,
-                'bordercolor': "#334155",
-                'steps': [
-                    {'range': [0, 50], 'color': 'rgba(16, 185, 129, 0.2)'},
-                    {'range': [50, 100], 'color': 'rgba(244, 63, 94, 0.2)'}
+        res_col1, res_col2 = st.columns([1, 1.2])
+
+        with res_col1:
+            # Gauge plot for probability score
+            fig_gauge = go.Figure(go.Indicator(
+                mode = "gauge+number",
+                value = prob_no_show * 100,
+                domain = {'x': [0, 1], 'y': [0, 1]},
+                title = {'text': "Predicted Probability of No-Show (no_show = 1) (%)", 'font': {'size': 14, 'color': '#94A3B8'}},
+                number = {'suffix': "%", 'font': {'size': 36, 'color': '#F8FAFC', 'family': 'Inter'}},
+                gauge = {
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#475569"},
+                    'bar': {'color': "#F43F5E" if prob_no_show >= 0.5 else "#10B981"},
+                    'bgcolor': "rgba(30, 41, 59, 0.5)",
+                    'borderwidth': 1,
+                    'bordercolor': "#334155",
+                    'steps': [
+                        {'range': [0, 50], 'color': 'rgba(16, 185, 129, 0.2)'},
+                        {'range': [50, 100], 'color': 'rgba(244, 63, 94, 0.2)'}
+                    ]
+                }
+            ))
+            fig_gauge.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=280,
+                margin=dict(l=20, r=20, t=50, b=20)
+            )
+            st.plotly_chart(fig_gauge, use_container_width=True)
+
+        with res_col2:
+            predicted_class = "No Show" if prob_no_show >= 0.5 else "Attended"
+            target_val = 1 if prob_no_show >= 0.5 else 0
+            
+            if predicted_class == "No Show":
+                risk_class = "risk-high"
+                risk_title = "PREDICTED OUTCOME: NO SHOW"
+                badge_bg = "#F43F5E"
+                rec_items = [
+                    " Send Automated WhatsApp & SMS Appointment Reminders (24h & 2h prior).",
+                    " Offer Patient Transportation Assistance / Mobility Voucher.",
+                    " Propose Telehealth / Virtual Consultation Transition.",
+                    " Schedule Direct Case Manager Follow-up Call."
                 ]
-            }
-        ))
-        fig_gauge.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            height=280,
-            margin=dict(l=20, r=20, t=50, b=20)
-        )
-        st.plotly_chart(fig_gauge, use_container_width=True)
+            else:
+                risk_class = "risk-low"
+                risk_title = "PREDICTED OUTCOME: ATTENDED"
+                badge_bg = "#10B981"
+                rec_items = [
+                    " Standard appointment workflow proceeding normally.",
+                    " Send standard calendar invitation and directions."
+                ]
 
-    with res_col2:
-        predicted_class = "No Show" if prob_no_show >= 0.5 else "Attended"
-        target_val = 1 if prob_no_show >= 0.5 else 0
-        
-        if predicted_class == "No Show":
-            risk_class = "risk-high"
-            risk_title = "PREDICTED OUTCOME: NO SHOW"
-            badge_bg = "#F43F5E"
-            rec_items = [
-                " Send Automated WhatsApp & SMS Appointment Reminders (24h & 2h prior).",
-                " Offer Patient Transportation Assistance / Mobility Voucher.",
-                " Propose Telehealth / Virtual Consultation Transition.",
-                " Schedule Direct Case Manager Follow-up Call."
-            ]
-        else:
-            risk_class = "risk-low"
-            risk_title = "PREDICTED OUTCOME: ATTENDED"
-            badge_bg = "#10B981"
-            rec_items = [
-                " Standard appointment workflow proceeding normally.",
-                " Send standard calendar invitation and directions."
-            ]
-
-        st.markdown(f"""
-        <div class="{risk_class}">
-            <div style="font-size: 0.85rem; color: #E2E8F0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">OPTION A — BINARY CLASSIFICATION RESULT</div>
-            <div class="risk-badge" style="background-color: {badge_bg}; color: #FFF; font-size: 1.3rem;">{risk_title}</div>
-            <div style="margin-top: 14px; font-size: 1.15rem; color: #F8FAFC;">
-                Target Variable (<b>no_show</b>): <span style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 6px; font-weight: bold;">{predicted_class} ({target_val})</span>
+            st.markdown(f"""
+            <div class="{risk_class}">
+                <div style="font-size: 0.85rem; color: #E2E8F0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">OPTION A — BINARY CLASSIFICATION RESULT</div>
+                <div class="risk-badge" style="background-color: {badge_bg}; color: #FFF; font-size: 1.3rem;">{risk_title}</div>
+                <div style="margin-top: 14px; font-size: 1.15rem; color: #F8FAFC;">
+                    Target Variable (<b>no_show</b>): <span style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 6px; font-weight: bold;">{predicted_class} ({target_val})</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 0.95rem; color: #CBD5E1;">
+                    No-Show Probability: <b>{prob_no_show*100:.1f}%</b> | Attendance Probability: <b>{(1-prob_no_show)*100:.1f}%</b>
+                </div>
+                <hr style="border-color: rgba(255,255,255,0.15); margin: 16px 0;">
+                <div style="text-align: left; font-weight: 600; color: #E2E8F0; margin-bottom: 8px;">
+                    💡 Recommended Action Plan:
+                </div>
+                <ul style="text-align: left; font-size: 0.92rem; color: #CBD5E1; line-height: 1.6; margin-bottom: 0;">
+                    {"".join([f"<li>{item}</li>" for item in rec_items])}
+                </ul>
             </div>
-            <div style="margin-top: 6px; font-size: 0.95rem; color: #CBD5E1;">
-                No-Show Probability: <b>{prob_no_show*100:.1f}%</b> | Attendance Probability: <b>{(1-prob_no_show)*100:.1f}%</b>
-            </div>
-            <hr style="border-color: rgba(255,255,255,0.15); margin: 16px 0;">
-            <div style="text-align: left; font-weight: 600; color: #E2E8F0; margin-bottom: 8px;">
-                💡 Recommended Action Plan:
-            </div>
-            <ul style="text-align: left; font-size: 0.92rem; color: #CBD5E1; line-height: 1.6; margin-bottom: 0;">
-                {"".join([f"<li>{item}</li>" for item in rec_items])}
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+    else:
+        st.markdown("---")
+        st.info("💡 **Ready for Prediction:** Enter patient clinical & billing parameters above, then click **'⚡ Run Real-Time AI Prediction'** to compute AI risk outcome.")
 
 # ------------------------------------------------------------------------------
 # TAB 2: SHAP & EXPLAINABLE AI
@@ -610,39 +633,42 @@ with tab2:
     with exp_col1:
         st.markdown("#### 🔬 Live Feature Contribution Breakdown")
         
-        # Calculate local feature influence for current prediction
-        feature_importances = {
-            "Waiting Days": waiting_days * 0.015,
-            "Missed Appointments": missed_prev * 0.08,
-            "Previous Appointments": -prev_appts * 0.03,
-            "Blood Sugar (mg/dL)": (blood_sugar - 100) * 0.001,
-            "Age": -age * 0.002,
-            "High Blood Pressure": 0.05 if high_bp_val else -0.02,
-            "Unpaid Payment Status": 0.07 if payment_status == "Unpaid" else -0.03,
-            "Length of Stay": stay_days * 0.01,
-            "Total Bill": (total_bill - 15000) * 0.000005
-        }
-        
-        fi_df = pd.DataFrame(list(feature_importances.items()), columns=["Feature", "Risk Contribution"]).sort_values("Risk Contribution")
-        
-        fig_waterfall = px.bar(
-            fi_df,
-            x="Risk Contribution",
-            y="Feature",
-            orientation='h',
-            color="Risk Contribution",
-            color_continuous_scale=["#10B981", "#38BDF8", "#F43F5E"],
-            title="Individual Patient Risk Feature Drivers"
-        )
-        fig_waterfall.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(30,41,59,0.5)',
-            font=dict(color='#F8FAFC'),
-            xaxis=dict(showgrid=True, gridcolor='#334155'),
-            yaxis=dict(showgrid=False),
-            height=380
-        )
-        st.plotly_chart(fig_waterfall, use_container_width=True)
+        if st.session_state.get('has_predicted', False):
+            # Calculate local feature influence for current prediction
+            feature_importances = {
+                "Waiting Days": waiting_days * 0.015,
+                "Missed Appointments": missed_prev * 0.08,
+                "Previous Appointments": -prev_appts * 0.03,
+                "Blood Sugar (mg/dL)": (blood_sugar - 100) * 0.001,
+                "Age": -age * 0.002,
+                "High Blood Pressure": 0.05 if high_bp_val else -0.02,
+                "Unpaid Payment Status": 0.07 if payment_status == "Unpaid" else -0.03,
+                "Length of Stay": stay_days * 0.01,
+                "Total Bill": (total_bill - 15000) * 0.000005
+            }
+            
+            fi_df = pd.DataFrame(list(feature_importances.items()), columns=["Feature", "Risk Contribution"]).sort_values("Risk Contribution")
+            
+            fig_waterfall = px.bar(
+                fi_df,
+                x="Risk Contribution",
+                y="Feature",
+                orientation='h',
+                color="Risk Contribution",
+                color_continuous_scale=["#10B981", "#38BDF8", "#F43F5E"],
+                title="Individual Patient Risk Feature Drivers"
+            )
+            fig_waterfall.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(30,41,59,0.5)',
+                font=dict(color='#F8FAFC'),
+                xaxis=dict(showgrid=True, gridcolor='#334155'),
+                yaxis=dict(showgrid=False),
+                height=380
+            )
+            st.plotly_chart(fig_waterfall, use_container_width=True)
+        else:
+            st.info("👈 Please click **'⚡ Run Real-Time AI Prediction'** in Tab 1 to generate live feature contribution breakdown.")
 
     with exp_col2:
         st.markdown("#### 🌐 Global SHAP Feature Importance Ranking")
@@ -987,3 +1013,4 @@ st.markdown("""
     SmartCare AI Clinical Suite v1.0.0 | Powered by Streamlit, Scikit-Learn, XGBoost & Plotly | Group 11
 </div>
 """, unsafe_allow_html=True)
+
