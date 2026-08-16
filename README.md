@@ -220,9 +220,9 @@ Based on the current test-set evaluation, **Logistic Regression** achieved the s
 
 | Metric | Score |
 |---|---:|
-| Accuracy | **64.00%** |
-| F1-Score | **0.6364** |
-| ROC-AUC | **0.6543** |
+| Accuracy | **63.00%** |
+| F1-Score | **0.6300** |
+| ROC-AUC | **0.6709** |
 
 The Logistic Regression model was selected as the best-performing model for the current experimental setup.
 
