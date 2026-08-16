@@ -281,8 +281,10 @@ Appointment Attendance / No-Show
 ```text
 smartcare-ai-project/
 │
-├── Dataset/
-│
+├── Data/
+│   ├── smartcare_ai_dataset_1000.csv
+│   ├── clean_dataset.csv        # cleaned/encoded dataset used for dashboard statistics
+│   ├── preprocessed_train_test.jolib
 ├── Notebook/
 │   ├── TASK_02_DatasetUnderstanding.ipynb
 │   ├── TASK-03_Data Preprocessing.ipynb
@@ -291,7 +293,7 @@ smartcare-ai-project/
 │   ├── TASK-06_Model EvaluationA.ipynb
 │   └── TASK_07_SHAP.ipynb
 │
-├── Outputs/
+├── asset/
 │   ├── shap_bar_summary.png
 │   ├── shap_beeswarm_summary.png
 │   ├── shap_waterfall_sample.png
@@ -308,16 +310,14 @@ smartcare-ai-project/
 │   ├── xgboost.joblib
 │   └── hyperparameter_summary.csv
 │
-├── prototype/
 │
 ├── src/
-│   ├── 02_dataset_understanding.py
-│   ├── 03_preprocessing_feature_engineering.py
-│   ├── 04_eda.py
-│   ├── 05_model_development.py
-│   ├── 06_model_evaluation.py
-│   └── 07_explainable_ai.py
-│
+│   ├── preprocessing.py         # raw form input -> exact feature row the model expects
+│   ├── prediction.py            # cached model loading + safe predict wrapper
+│   ├── explainability.py        # live SHAP (LinearExplainer) + global importance
+│   ├── utils.py                 # category mappings, risk thresholds, CSS theme
+│  
+├── app.py                     # Streamlit UI: navigation, pages, charts
 ├── requirements.txt
 └── README.md
 ```
