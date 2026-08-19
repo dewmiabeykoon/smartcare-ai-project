@@ -5,6 +5,8 @@ SmartCare AI is a group-based Artificial Intelligence and Machine Learning proje
 
 The project implements an end-to-end machine learning workflow, including data understanding, preprocessing, exploratory data analysis, feature engineering, model development, hyperparameter tuning, model evaluation, and Explainable AI using SHAP.
 
+🔗 **Live Demo:** [smartcare-ai-project-11.streamlit.app](https://smartcare-ai-project-11.streamlit.app/)
+
 ---
 
 ## 📌 Project Overview
@@ -212,6 +214,8 @@ Models were evaluated using:
 - Training vs Testing Performance
 - Overfitting Analysis
 
+![Model Performance Comparison](assets/model_comparison.png)
+
 ---
 
 ## 🏆 Best Performing Model
@@ -281,46 +285,55 @@ Appointment Attendance / No-Show
 ```text
 smartcare-ai-project/
 │
-├── Data/
+├── data/
 │   ├── smartcare_ai_dataset_1000.csv
-│   ├── clean_dataset.csv        # cleaned/encoded dataset used for dashboard statistics
-│   ├── preprocessed_train_test.jolib
+│   ├── clean_dataset.csv           # cleaned/encoded dataset used for dashboard statistics
+│   └── preprocessed_train_test.joblib
+│
 ├── Notebook/
 │   ├── TASK_02_DatasetUnderstanding.ipynb
 │   ├── TASK-03_Data Preprocessing.ipynb
 │   ├── TASK-04_EDA.ipynb
-│   ├── TASK-05_ModelDevelopment.ipynb
+│   ├── TASK_05_ModelDevelopment.ipynb
 │   ├── TASK-06_Model EvaluationA.ipynb
 │   └── TASK_07_SHAP.ipynb
 │
-├── asset/
+├── assets/
 │   ├── shap_bar_summary.png
 │   ├── shap_beeswarm_summary.png
 │   ├── shap_waterfall_sample.png
 │   ├── shap_global_importance.csv
 │   ├── shap_local_sample_0.csv
-│   └── lr_coefficients.png
+│   ├── lr_coefficients.png
+│   └── logistic_regression_coefficients.csv
 │
 ├── models/
-│   ├── best_model.pkl
 │   ├── logistic_regression.joblib
 │   ├── decision_tree.joblib
 │   ├── random_forest.joblib
 │   ├── knn.joblib
 │   ├── xgboost.joblib
-│   └── hyperparameter_summary.csv
-│
+│   ├── train_test_split.joblib
+│   ├── model_evaluation_results.csv
+
 │
 ├── src/
-│   ├── preprocessing.py         # raw form input -> exact feature row the model expects
-│   ├── prediction.py            # cached model loading + safe predict wrapper
-│   ├── explainability.py        # live SHAP (LinearExplainer) + global importance
-│   ├── utils.py                 # category mappings, risk thresholds, CSS theme
-│  
-├── app.py                     # Streamlit UI: navigation, pages, charts
+│   ├── preprocessing.py             # raw form input -> exact feature row the model expects
+│   ├── prediction.py                # cached model loading + safe predict wrapper
+│   ├── explainability.py            # live SHAP (LinearExplainer) + global importance
+│   └── utils.py                     # category mappings, risk thresholds, CSS theme
+│
+├── Presentation/
+│   └── Presentation.pptx
+│
+├── Technical Report/
+│   └── Technical Report_ Group 11.pdf
+│
+├── app.py                         # Streamlit UI: navigation, pages, charts
 ├── requirements.txt
 └── README.md
 ```
+
 
 ---
 
@@ -333,7 +346,8 @@ smartcare-ai-project/
 | Machine Learning | Scikit-learn |
 | Gradient Boosting | XGBoost |
 | Explainable AI | SHAP |
-| Visualization | Matplotlib |
+| Visualization | Matplotlib, Plotly |
+| Web App / Dashboard | Streamlit |
 | Model Saving | Joblib |
 | Development | Jupyter Notebook / Google Colab |
 
@@ -401,6 +415,16 @@ Run the notebooks in the following order:
 
 The corresponding Python source files are available inside the `src/` directory.
 
+### Running the Streamlit Dashboard
+
+Once the environment is set up, launch the interactive prediction dashboard with:
+
+```bash
+streamlit run app.py
+```
+
+This opens the SmartCare AI web app, where a patient's details can be entered to generate a no-show prediction along with a live SHAP-based explanation.
+
 ---
 
 ## 🔐 Data Leakage Prevention
@@ -420,19 +444,6 @@ train_test_split(
 ```
 
 Cross-validation is used during hyperparameter tuning so that model selection does not rely on the final test set.
-
----
-
-## 📚 Coursework Tasks
-
-| Task | Description |
-|---|---|
-| Task 02 | Dataset Understanding |
-| Task 03 | Data Preprocessing & Feature Engineering |
-| Task 04 | Exploratory Data Analysis |
-| Task 05 | Model Development |
-| Task 06 | Model Evaluation |
-| Task 07 | Explainable AI using SHAP |
 
 ---
 
@@ -512,3 +523,5 @@ The model is trained using a limited dataset and may not generalize to real-worl
 ## 🔗 Repository
 
 GitHub: https://github.com/dewmiabeykoon/smartcare-ai-project
+
+Live Demo: https://smartcare-ai-project-11.streamlit.app/
